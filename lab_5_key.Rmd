@@ -83,3 +83,59 @@ My means difference is -2.7 away from 0.
 We would reject the null hypothesis because there is a 1.8% chance that....
 
 
+## Example 2
+
+Using the `mpg` dataset to compare city gas mileage for SUVs and compact cars.
+Many different ways to do this....
+
+Make subset called compact_suv that only contains obsv wehre class is compact OR SUVS
+- unique(mpg$class) in console to view all the different vectors in a single column unique(dataframe$column)
+
+```{r}
+compact_suv <- mpg %>% 
+  filter(class %in% c("suv", "compact")) 
+# check and make sure works in console/easier than searching through datatset   unique(compact_suv$class)
+```
+
+# want to see suv and compact separately, here we use facet_wrap() to split up in each class
+# can adjust bin, default = 30
+# histogram only needs x value
+
+# next create quantile quanitle plot
+- perfectly normal distributions would have linear relationshiops
+- should only be used in combo with histograms
+
+```{r}
+ggplot(data = compact_suv, aes(x = cty)) +
+  geom_histogram(bins = 12) +
+  facet_wrap(~ class)
+
+ggplot(data = compact_suv, aes(sample = cty)) +
+  geom_qq() +
+  facet_wrap(~ class)
+```
+# by group_by() that exists within class
+
+```{r}
+car_stats <- compact_suv %>% 
+  group_by(class) %>% 
+  summarize(mean_city = round(mean(cty),1),
+            sd_city = round(sd(cty), 1),
+            sample_size = n())
+car_stats
+```
+
+```{r}
+compact_sample <- compact_suv %>% 
+  filter(class == "compact") %>% 
+  pull(cty)
+
+suv_sample <- compact_suv %>% 
+  filter(class == "suv") %>% 
+  pull(cty)
+
+cars_t <- t.test(compact_sample, suv_sample)
+```
+
+Reject null hypothesis of equal mean city gas mileages: stats speak
+in paper: mean gas mileage (say means) for compact cars and SUVs differ significantly (t(`r cars_t$parameter`) = `r cars_t$statistic`, p < 0.001, $\alpha$ = 0.05).
